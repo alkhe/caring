@@ -3,6 +3,7 @@
     "babel-core": "^6.18.2",
     "babel-loader": "^6.2.8",
     "benchmark": "^2.1.2",
-    "webpack": "2.1.0-beta.27"
+    "webpack": "2.1.0-beta.27",
+    "webpack-node-externals": "^1.5.4"
   }
 }
