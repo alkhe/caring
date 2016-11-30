@@ -1,0 +1,13 @@
+const ROOT = 0
+const ADDITION = 1
+const DELETION = 2
+const MULTIADD = 3
+const MULTIDEL = 4
+
+export {
+	ROOT,
+	ADDITION,
+	DELETION,
+	MULTIADD,
+	MULTIDEL
+}
