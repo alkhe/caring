@@ -7,17 +7,17 @@ const RootMap = entries => ({
 })
 
 const AdditionMap = (previous, key, value, debt) => ({
-	previous,
-	debt,
 	type: ADDITION,
+	debt,
+	previous,
 	key,
 	value
 })
 
 const DeletionMap = (previous, key, debt) => ({
-	previous,
-	debt,
 	type: DELETION,
+	debt,
+	previous,
 	key
 })
 
