@@ -3,9 +3,8 @@ import EmptyMap from '../src'
 const log = ::console.log
 
 const dump = x => {
-	log(x)
-	log(x.keys())
-	log(x.values())
+	log(Array.from(x.keys()))
+	log(Array.from(x.values()))
 	log(x.toString())
 }
 

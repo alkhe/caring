@@ -1,11 +1,13 @@
 import { resolve } from 'path'
 import ne from 'webpack-node-externals'
 
+const { FILE } = process.env
+
 export default {
-	entry: './benchmark.js',
+	entry: `./${ FILE }.js`,
 	output: {
 		path: resolve('.'),
-		filename: 'benchmark.bundle.js'
+		filename: `${ FILE }.bundle.js`
 	},
 	module: {
 		loaders: [{ test: /\.js$/, loader: 'babel-loader', exclude: /node_modules/ }],

@@ -5,27 +5,30 @@ let MAX_DEBT = 128
 
 export const set_max_debt = x => MAX_DEBT = x
 
-function MapNode(type, debt) {
+function MapNode(type, debt, data) {
 	this.type = type
 	this.debt = debt
+	this.data = data
 }
 
 MapNode.prototype.has = function(k) {
 	let node = this
 
 	for (;;) {
+		const { data } = node
+
 		switch (node.type) {
 			case ROOT:
-				return node.entries.has(k)
+				return data.has(k)
 			case ADDITION:
-				if (node.key === k) return true
+				if (data.key === k) return true
 				break
 			case DELETION:
-				if (node.key === k) return false
+				if (data.key === k) return false
 				break
 		}
 
-		node = node.previous
+		node = data.previous
 	}
 }
 
@@ -33,25 +36,28 @@ MapNode.prototype.get = function(k, d) {
 	let node = this
 
 	for (;;) {
+		const { data } = node
+
 		switch (node.type) {
 			case ROOT: {
-				const { entries } = node
-				return entries.has(k) ? entries.get(k) : d
+				return data.has(k) ? data.get(k) : d
 			}
 			case ADDITION:
-				if (node.key === k) return node.value
+				if (data.key === k) return data.value
 				break
 			case DELETION:
-				if (node.key === k) return d
+				if (data.key === k) return d
 				break
 		}
 
-		node = node.previous
+		node = data.previous
 	}
 }
 
 MapNode.prototype.set = function(k, v) {
-	if (this.type === ADDITION && this.key === k && this.value === v) return this
+	const { data } = this
+
+	if (this.type === ADDITION && data.key === k && data.value === v) return this
 
 	const debt = this.debt + 1
 	const next = AdditionMap(this, k, v, debt)
@@ -60,7 +66,7 @@ MapNode.prototype.set = function(k, v) {
 }
 
 MapNode.prototype.remove = function(k) {
-	if (this.type === DELETION && this.key === k) return this
+	if (this.type === DELETION && this.data.key === k) return this
 	
 	const debt = this.debt + 1
 	const next = DeletionMap(this, k, debt)
@@ -68,100 +74,66 @@ MapNode.prototype.remove = function(k) {
 	return debt > MAX_DEBT ? next.compress() : next
 }
 
-MapNode.prototype.keys = function() {
-	let node = this
-	const additions = new Set
-	const deletions = new Set
-
-	for (;;) {
-		switch (node.type) {
-			case ROOT:
-				for (const k of node.entries.keys()) {
-					if (!deletions.has(k)) additions.add(k)
-				}
-
-				return additions
-			case ADDITION: {
-				const k = node.key
-				if (!deletions.has(k)) {
-					additions.add(k)
-				}
-				break
-			}
-			case DELETION:
-				deletions.add(node.key)
-				break
-		}
-
-		node = node.previous
-	}
-}
-
-MapNode.prototype.entries = function() {
-	let node = this
+function entries(node) {
 	const entries = new Map
 	const deletions = new Set
 
 	for (;;) {
+		const { data } = node
+
 		switch (node.type) {
 			case ROOT:
-				for (const [k, v] of node.entries) {
-					if (!entries.has(k) && deletions.has(k)) entries.set(k, v)
+				for (const [k, v] of data) {
+					if (!entries.has(k) && !deletions.has(k)) entries.set(k, v)
 				}
+				
 				return entries
 			case ADDITION: {
-				const k = node.key
+				const k = data.key
 				if (!entries.has(k) && !deletions.has(k)) {
-					entries.set(k, node.value)
+					entries.set(k, data.value)
 				}
 				break
 			}
 			case DELETION:
-				deletions.add(node.key)
+				deletions.add(data.key)
 				break
 		}
 
-		node = node.previous
+		node = data.previous
 	}
+}
+
+MapNode.prototype.keys = function() {
+	return this.entries().keys()
 }
 
 MapNode.prototype.values = function() {
-	let node = this
-	const values = []
-	const additions = new Set
-	const deletions = new Set
+	return this.entries().values()
+}
 
-	for (;;) {
-		switch (node.type) {
-			case ROOT: {
-				for (const [k, v] of node.entries) {
-					if (!additions.has(k) && deletions.has(k)) values.push(v)
-				}
-				return values
-			}
-			case ADDITION: {
-				const k = node.key
-				if (!additions.has(k) && !deletions.has(k)) {
-					additions.add(k)
-					values.push(node.value)
-				}
-				break
-			}
-			case DELETION:
-				deletions.add(node.key)
-				break
-		}
-
-		node = node.previous
-	}
+MapNode.prototype.entries = function() {
+	return this.compress().data
 }
 
 MapNode.prototype.compress = function() {
-	return RootMap(this.entries())
+	if (this.type !== ROOT) {
+		this.data = entries(this)
+		this.type = ROOT
+		this.debt = 0
+	}
+
+	return this
 }
 
 MapNode.prototype.toString = function() {
-	return `SharedMap { ${ Array.from(this.entries()).map(([k, v]) => `${ k }: ${ v }`).join(', ') } }`
+	let out = []
+
+	for (const [k, v] of this.entries()) {
+		out.push(`${ k }: ${ v }`)
+	}
+
+	return `SharedMap { ${ out.join(', ') } }`
 }
 
 export default MapNode
