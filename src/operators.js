@@ -1,5 +1,5 @@
-import { ROOT, ADDITION, DELETION, MULTIADD, MULTIDEL } from './constants'
-import { RootMap, AdditionMap, DeletionMap, MultiAddMap, MultiDelMap } from './maps'
+import { ROOT, ADDITION, DELETION } from './constants'
+import { RootMap, AdditionMap, DeletionMap } from './maps'
 
 let MAX_DEBT = 128
 
@@ -17,14 +17,6 @@ function has(k) {
 				break
 			case DELETION:
 				if (node.key === k) return false
-				break
-			case MULTIADD:
-				if (node.entries.has(k)) return true
-				break
-			case MULTIDEL:
-				if (node.keys.has(k)) return false
-				break
-			default:
 				break
 		}
 
@@ -47,16 +39,6 @@ function get(k, d) {
 			case DELETION:
 				if (node.key === k) return d
 				break
-			case MULTIADD: {
-				const { entries } = node
-				if (entries.has(k)) return entries.get(k)
-				break
-			}
-			case MULTIDEL:
-				if (node.keys.has(k)) return false
-				break
-			default:
-				break
 		}
 
 		node = node.previous
@@ -77,20 +59,6 @@ function remove(k) {
 	
 	const debt = this.debt + 1
 	const next = DeletionMap(this, k, debt)
-
-	return debt > MAX_DEBT ? next::compress() : next
-}
-
-function multi_set(entries) {
-	const debt = this.debt + 1
-	const next = MultiAddMap(this, entries, debt)
-
-	return debt > MAX_DEBT ? next::compress() : next
-}
-
-function multi_remove(keys) {
-	const debt = this.debt + 1
-	const next = MultiDelMap(this, keys, debt)
 
 	return debt > MAX_DEBT ? next::compress() : next
 }
@@ -117,18 +85,6 @@ function keys() {
 			}
 			case DELETION:
 				deletions.add(node.key)
-				break
-			case MULTIADD:
-				for (const k of node.entries.keys()) {
-					if (!deletions.has(k)) additions.add(k)
-				}
-				break
-			case MULTIDEL:
-				for (const k of node.keys) {
-					deletions.add(k)
-				}
-				break
-			default:
 				break
 		}
 
@@ -157,20 +113,6 @@ function entries() {
 			}
 			case DELETION:
 				deletions.add(node.key)
-				break
-			case MULTIADD:
-				for (const [k, v] of node.entries) {
-					if (!entries.has(k) && !deletions.has(k)) {
-						entries.set(k, v)
-					}
-				}
-				break
-			case MULTIDEL:
-				for (const k of node.keys) {
-					deletions.add(k)
-				}
-				break
-			default:
 				break
 		}
 
@@ -203,21 +145,6 @@ function values() {
 			case DELETION:
 				deletions.add(node.key)
 				break
-			case MULTIADD: {
-				for (const [k, v] of node.entries) {
-					if (!additions.has(k) && !deletions.has(k)) {
-						additions.add(k)
-						values.push(v)
-					}
-				}
-				break
-			}
-			case MULTIDEL: {
-				for (const k of node.keys) {
-					deletions.add(k)
-				}
-				break
-			}
 		}
 
 		node = node.previous
@@ -234,7 +161,6 @@ function toString() {
 
 export {
 	has, get, set, remove,
-	multi_set, multi_remove,
 	keys, entries, values,
 	compress, toString
 }

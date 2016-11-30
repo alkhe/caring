@@ -9,7 +9,7 @@ const dump = x => {
 	log(x::ops.toString())
 }
 
-let a = EmptyMap::ops.set('a', 1)::ops.set('b', 2)::ops.set('d', 4)::ops.remove('a')::ops.multi_remove(['b', 'c'])
+let a = EmptyMap::ops.set('a', 1)::ops.set('b', 2)::ops.set('d', 4)::ops.remove('a')::ops.remove('b')::ops.remove('c')
 
 dump(a)
 
