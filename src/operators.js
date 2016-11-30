@@ -9,18 +9,20 @@ function has(k) {
 	let node = this
 
 	for (;;) {
+		const { data } = node
+
 		switch (node.type) {
 			case ROOT:
-				return node.entries.has(k)
+				return data.has(k)
 			case ADDITION:
-				if (node.key === k) return true
+				if (data.key === k) return true
 				break
 			case DELETION:
-				if (node.key === k) return false
+				if (data.key === k) return false
 				break
 		}
 
-		node = node.previous
+		node = data.previous
 	}
 }
 
@@ -28,25 +30,25 @@ function get(k, d) {
 	let node = this
 
 	for (;;) {
+		const { data } = node
+
 		switch (node.type) {
-			case ROOT: {
-				const { entries } = node
-				return entries.has(k) ? entries.get(k) : d
-			}
+			case ROOT:
+				return data.has(k) ? data.get(k) : d
 			case ADDITION:
-				if (node.key === k) return node.value
+				if (data.key === k) return data.value
 				break
 			case DELETION:
-				if (node.key === k) return d
+				if (data.key === k) return d
 				break
 		}
 
-		node = node.previous
+		node = data.previous
 	}
 }
 
 function set(k, v) {
-	if (this.type === ADDITION && this.key === k && this.value === v) return this
+	if (this.type === ADDITION && this.data.key === k && this.data.value === v) return this
 
 	const debt = this.debt + 1
 	const next = AdditionMap(this, k, v, debt)
@@ -63,96 +65,55 @@ function remove(k) {
 	return debt > MAX_DEBT ? next::compress() : next
 }
 
-function keys() {
-	let node = this
-	const additions = new Set
-	const deletions = new Set
-
-	for (;;) {
-		switch (node.type) {
-			case ROOT:
-				for (const k of node.entries.keys()) {
-					if (!deletions.has(k)) additions.add(k)
-				}
-
-				return additions
-			case ADDITION: {
-				const k = node.key
-				if (!deletions.has(k)) {
-					additions.add(k)
-				}
-				break
-			}
-			case DELETION:
-				deletions.add(node.key)
-				break
-		}
-
-		node = node.previous
-	}
-}
-
-function entries() {
-	let node = this
+function compute_entries(node) {
 	const entries = new Map
 	const deletions = new Set
 
 	for (;;) {
+		const { data } = node
+
 		switch (node.type) {
 			case ROOT:
-				for (const [k, v] of node.entries) {
-					if (!entries.has(k) && deletions.has(k)) entries.set(k, v)
+				for (const [k, v] of data) {
+					if (!entries.has(k) && !deletions.has(k)) entries.set(k, v)
 				}
 				return entries
 			case ADDITION: {
-				const k = node.key
+				const k = data.key
 				if (!entries.has(k) && !deletions.has(k)) {
-					entries.set(k, node.value)
+					entries.set(k, data.value)
 				}
 				break
 			}
 			case DELETION:
-				deletions.add(node.key)
+				deletions.add(data.key)
 				break
 		}
 
-		node = node.previous
+		node = data.previous
 	}
+}
+
+function keys() {
+	return this::entries().keys()
+}
+
+function entries() {
+	return this::compress().data
 }
 
 function values() {
-	let node = this
-	const values = []
-	const additions = new Set
-	const deletions = new Set
-
-	for (;;) {
-		switch (node.type) {
-			case ROOT: {
-				for (const [k, v] of node.entries) {
-					if (!additions.has(k) && deletions.has(k)) values.push(v)
-				}
-				return values
-			}
-			case ADDITION: {
-				const k = node.key
-				if (!additions.has(k) && !deletions.has(k)) {
-					additions.add(k)
-					values.push(node.value)
-				}
-				break
-			}
-			case DELETION:
-				deletions.add(node.key)
-				break
-		}
-
-		node = node.previous
-	}
+	return this::entries().values()
 }
 
 function compress() {
-	return RootMap(this::entries())
+	if (this.type !== ROOT) {
+		this.data = compute_entries(this)
+		this.type = ROOT
+		this.debt = 0
+	}
+
+	return this
 }
 
 function toString() {

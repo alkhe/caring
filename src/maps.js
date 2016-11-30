@@ -3,22 +3,26 @@ import { ROOT, ADDITION, DELETION } from './constants'
 const RootMap = entries => ({
 	type: ROOT,
 	debt: 0,
-	entries
+	data: entries
 })
 
 const AdditionMap = (previous, key, value, debt) => ({
 	type: ADDITION,
 	debt,
-	previous,
-	key,
-	value
+	data: {
+		previous,
+		key,
+		value
+	}
 })
 
 const DeletionMap = (previous, key, debt) => ({
 	type: DELETION,
 	debt,
-	previous,
-	key
+	data: {
+		previous,
+		key
+	}
 })
 
 export {
