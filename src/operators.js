@@ -5,7 +5,12 @@ let MAX_DEBT = 128
 
 export const set_max_debt = x => MAX_DEBT = x
 
-function has(k) {
+function MapNode(type, debt) {
+	this.type = type
+	this.debt = debt
+}
+
+MapNode.prototype.has = function(k) {
 	let node = this
 
 	for (;;) {
@@ -24,7 +29,7 @@ function has(k) {
 	}
 }
 
-function get(k, d) {
+MapNode.prototype.get = function(k, d) {
 	let node = this
 
 	for (;;) {
@@ -45,25 +50,25 @@ function get(k, d) {
 	}
 }
 
-function set(k, v) {
+MapNode.prototype.set = function(k, v) {
 	if (this.type === ADDITION && this.key === k && this.value === v) return this
 
 	const debt = this.debt + 1
 	const next = AdditionMap(this, k, v, debt)
 
-	return debt > MAX_DEBT ? next::compress() : next
+	return debt > MAX_DEBT ? next.compress() : next
 }
 
-function remove(k) {
+MapNode.prototype.remove = function(k) {
 	if (this.type === DELETION && this.key === k) return this
 	
 	const debt = this.debt + 1
 	const next = DeletionMap(this, k, debt)
 
-	return debt > MAX_DEBT ? next::compress() : next
+	return debt > MAX_DEBT ? next.compress() : next
 }
 
-function keys() {
+MapNode.prototype.keys = function() {
 	let node = this
 	const additions = new Set
 	const deletions = new Set
@@ -92,7 +97,7 @@ function keys() {
 	}
 }
 
-function entries() {
+MapNode.prototype.entries = function() {
 	let node = this
 	const entries = new Map
 	const deletions = new Set
@@ -120,7 +125,7 @@ function entries() {
 	}
 }
 
-function values() {
+MapNode.prototype.values = function() {
 	let node = this
 	const values = []
 	const additions = new Set
@@ -151,16 +156,12 @@ function values() {
 	}
 }
 
-function compress() {
-	return RootMap(this::entries())
+MapNode.prototype.compress = function() {
+	return RootMap(this.entries())
 }
 
-function toString() {
-	return `SharedMap { ${ Array.from(this::entries()).map(([k, v]) => `${ k }: ${ v }`).join(', ') } }`
+MapNode.prototype.toString = function() {
+	return `SharedMap { ${ Array.from(this.entries()).map(([k, v]) => `${ k }: ${ v }`).join(', ') } }`
 }
 
-export {
-	has, get, set, remove,
-	keys, entries, values,
-	compress, toString
-}
+export default MapNode

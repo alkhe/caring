@@ -1,25 +1,32 @@
 import { ROOT, ADDITION, DELETION } from './constants'
+import MapNode from './operators'
 
-const RootMap = entries => ({
-	type: ROOT,
-	debt: 0,
-	entries
-})
+const RootMap = entries => {
+	const node = new MapNode(ROOT, 0)
+	
+	node.entries = entries
 
-const AdditionMap = (previous, key, value, debt) => ({
-	type: ADDITION,
-	debt,
-	previous,
-	key,
-	value
-})
+	return node
+}
 
-const DeletionMap = (previous, key, debt) => ({
-	type: DELETION,
-	debt,
-	previous,
-	key
-})
+const AdditionMap = (previous, key, value, debt) => {
+	const node = new MapNode(ADDITION, debt)
+
+	node.previous = previous
+	node.key = key
+	node.value = value
+
+	return node
+}
+
+const DeletionMap = (previous, key, debt) => {
+	const node = new MapNode(DELETION, debt)
+
+	node.previous = previous
+	node.key = key
+
+	return node
+}
 
 export {
 	RootMap,

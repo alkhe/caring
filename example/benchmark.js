@@ -1,5 +1,5 @@
 import { Benchmark } from 'benchmark'
-import EmptyMap, { set, remove, set_max_debt } from '../src'
+import EmptyMap, { set_max_debt } from '../src'
 
 function onComplete() {
 	const { name, stats } = this
@@ -20,7 +20,7 @@ const bench = max_debt =>
 
 			for (let i = 0; i < 100; i++) {
 				for (let j = 0; j < 100; j++) {
-					map = map::set('a', 1)::set('b', 1)::remove('a')::remove('b')
+					map = map.set('a', 1).set('b', 1).remove('a').remove('b')
 				}
 			}
 		},
