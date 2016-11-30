@@ -1,6 +1,5 @@
 import { Benchmark } from 'benchmark'
-import EmptyMap from '../src'
-import { set, remove, set_max_debt } from '../src/operators'
+import EmptyMap, { set, remove, set_max_debt } from '../src'
 
 function onComplete() {
 	const { name, stats } = this
@@ -39,7 +38,7 @@ const bench_control = Benchmark('Spread', {
 
 		for (let i = 0; i < 100; i++) {
 			for (let j = 0; j < 100; j++) {
-				map = { ...map, a: 1, b: 2 }
+				map = { ...map, a: 1, b: 1 }
 				var { a, b, ...map } = map
 			}
 		}

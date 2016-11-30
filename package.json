@@ -4,5 +4,14 @@
     "babel-preset-latest": "^6.16.0",
     "babel-preset-stage-0": "^6.16.0",
     "webpack": "2.1.0-beta.27"
+  },
+  "name": "caring",
+  "version": "0.1.0",
+  "description": "Javascript immutables with structural sharing.",
+  "main": "./lib/index.js",
+  "author": "synchronous",
+  "license": "MIT",
+  "scripts": {
+    "build": "babel src -d lib"
   }
 }

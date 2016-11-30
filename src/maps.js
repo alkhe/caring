@@ -6,7 +6,7 @@ const RootMap = entries => ({
 	entries
 })
 
-const AdditionMap = (previous = IdentityMap, key, value, debt = 1) => ({
+const AdditionMap = (previous, key, value, debt) => ({
 	previous,
 	debt,
 	type: ADDITION,
@@ -14,7 +14,7 @@ const AdditionMap = (previous = IdentityMap, key, value, debt = 1) => ({
 	value
 })
 
-const DeletionMap = (previous = IdentityMap, key, debt = 1) => ({
+const DeletionMap = (previous, key, debt) => ({
 	previous,
 	debt,
 	type: DELETION,
